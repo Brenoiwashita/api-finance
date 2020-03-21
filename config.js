@@ -12,10 +12,8 @@ const options = { poolSize: 5, useUnifiedTopology: true, useNewUrlParser: true};
 
 // start mongo
 mongoose.connect(urlMongo, {useNewUrlParser: true});
-const conn = mongoose.connection;
 mongoose.connection.once('open', () => { console.log('MongoDB Connected'); });
-mongoose.connection.on('error', (err) => { console.log('MongoDB connection error: ', err);
-
+mongoose.connection.on('error', (err) => { console.log('MongoDB connection error: ', err)});
 
 app.use(bodyParser.urlencoded({extended:false}));
 app.use(bodyParser.json());
@@ -26,7 +24,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use('/user', indexRouter);
 
 //port
-app.listen(3000);
+app.listen(process.env.PORT || 3000)
 
 console.log('Rodando na porta ' + 3000);
 

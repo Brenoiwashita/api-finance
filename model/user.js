@@ -19,11 +19,12 @@ const addValueSchema = new schema ({
 });
 
 const UserSchema = new schema({
-    name: {type: String},
-    email: {type: String, unique: true},
-    passWord: {type: String},
+    name: {type: String, required: true},
+    email: {type: String, unique: true, required: true},
+    passWord: {type: String, required: true},
     token: {type: String, unique: true},
-    salary: {type: SalarySchema},
+    salary: {type: SalarySchema, required: true},
+    dateBirth : {type: String, required: true},
     debtSchema: [{type: debtSchema}],
     addValue: [{type: addValueSchema}]
 });

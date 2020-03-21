@@ -1,62 +1,61 @@
 const express = require('express');
 const _router = express.Router();
-const UserSchema = require('../model/userModel');
-
-function methodSend(status, data, res) {
-    if (status) {
-        return res.json({
-            response: 'ok',
-            data: data
-        });
-    } else {
-        return res.json ({
-            response: 'error',
-            data: data
-        });
-    }
-}
-
-function methodCreate(condition, body, res){
-    if (condition) {
-        UserSchema
-            .create(body, (err, data) => {
-                if (err) {
-                    methodSend(false, err, res);
-                } else {
-                    methodSend(true, data, res);
-                }
-            });
-    };
-}
-
+const jwt = require('jwt-simple');
+const UserSchema = require('../model/user');
 
 // To get all users
 _router.get('/', (req, res) => {
-  UserSchema
-    .find({}, (err, data) => {
-        if (err) {
-            console.log(err);
-            methodSend(false, err, res);
-        } else {
-            if (data.length > 0) {
-                methodSend(true, data, res);
+    UserSchema
+        .find({}, (err, data) => {
+            if (err) {
+                console.log(err);
+                res.json({
+                    mensage: 'error',
+                    data: err
+                })
+            } else {
+                if (data.length > 0) {
+                    res.json({
+                        mensage: 'ok',
+                        data: data
+                    })
+                } else {
+                    if (data.length === 0) {
+                        res.json({
+                            mensage: 'Sem dados',
+                            data: data
+                        })
+                    }
+                }
             }
-        }
-    });
+        });
 });
 
 // To find user in login 
 _router.post('/login', (req, res) => {
     const email = req.body.email;
-    const passWord = req.body. passWord;
+    const passWord = req.body.passWord;
     UserSchema
-        .findOne({email: email, passWord: passWord}, (err, data) =>{
+        .findOne({ email: email, passWord: passWord}, (err, data) => {
             if (data) {
-                methodSend(true, data, res);
+                return res.json({
+                    mensage: 'ok',
+                    data: data
+                })
             } else {
                 if (err) {
-                    methodSend(false, err, res);
+                    return res.json({
+                        mensage: 'error',
+                        data: err
+                    })
                 }
+            }
+
+            if (data === null) {
+                return res.json({
+                    mensage: 'error',
+                    data: "Usuario nao encontrado"
+                })
             }
         });
 });
@@ -66,15 +65,36 @@ _router.post('/', (req, res) => {
     const body = req.body;
     const reqEmail = req.body.email;
     UserSchema
-        .findOne({email: reqEmail }, (err, data) => {
-            if(!data) {
-                methodCreate(true, body, res);
+        .findOne({ email: reqEmail }, (err, data) => {
+            if (!data) {
+                var secret = reqEmail+req.body.passWord;
+                const token = jwt.encode(secret, '###');
+                body.token = token;
+                UserSchema.create(body, (err, data) => {
+                    if (err) {
+                        return res.json({
+                            mensage: 'error',
+                            data: err
+                        })
+                    } else {
+                        return res.json({
+                            mensage: 'ok',
+                            data: data
+                        })
+                    }
+                });
             } else {
-                methodSend(false, 'Email ja existente', res);
+                res.json({
+                    mensage: 'Email existente',
+                    data: ''
+                })
             }
 
             if (err) {
-                methodSend(false, err, res);
+                res.json({
+                    mensage: 'error',
+                    data: err
+                })
             }
         })
 });
@@ -86,30 +106,42 @@ _router.put('/', (req, res) => {
     const token = req.body.token;
 
     UserSchema
-        .updateOne({email: email, token: token}, body, (err, data) => {
-            if(data) {
-                methodSend(true, data, res);
+        .updateOne({ email: email, token: token }, body, (err, data) => {
+            if (data) {
+                res.json({
+                    mensage: 'ok',
+                    data: data
+                })
             } else {
-                methodSend(false, err, res);
+                res.json({
+                    mensage: 'error',
+                    data: err
+                })
             }
         })
 });
 
 // To delete user created
 _router.delete('/', (req, res) => {
-   const email = req.body.email;
-   const token = req.body.token;
+    const email = req.body.email;
+    const token = req.body.token;
 
-   UserSchema
-    .deleteOne({email: email, token: token}, (err, data) => {
-        if (data) {
-            methodSend(true, 'Deleted with success - '+data, res);
-        } else {
-            if (err) {
-                methodSend(false, err, res);
+    UserSchema
+        .deleteOne({ email: email, token: token }, (err, data) => {
+            if (data) {
+                res.json({
+                    mensage: 'ok',
+                    data: data
+                })
+            } else {
+                if (err) {
+                    res.json({
+                        mensage: 'error',
+                        data: err
+                    })
+                }
             }
-        }
-    })
+        })
 });
 
 

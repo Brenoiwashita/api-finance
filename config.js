@@ -11,8 +11,10 @@ const urlMongo = 'mongodb+srv://breno123:'+passwordMongo+'@cluster0-bycmm.mongod
 const options = { poolSize: 5, useUnifiedTopology: true, useNewUrlParser: true};
 
 // start mongo
-mongoose.connect(urlMongo, options);
-mongoose.set('useCreateIndex', true);
+mongoose.connect(urlMongo, {useNewUrlParser: true});
+const conn = mongoose.connection;
+mongoose.connection.once('open', () => { console.log('MongoDB Connected'); });
+mongoose.connection.on('error', (err) => { console.log('MongoDB connection error: ', err);
 
 
 app.use(bodyParser.urlencoded({extended:false}));

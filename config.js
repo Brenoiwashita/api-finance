@@ -3,7 +3,9 @@ const mongoose = require('mongoose');
 const app = express();
 const indexRouter = require('./_routes/userRoute');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 
+app.use(cors);
 
  // mongo config
 const passwordMongo = '1Y7xVd4RFCmjZm9Y';
